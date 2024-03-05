@@ -1,0 +1,103 @@
+# Importar las bibliotecas
+import requests
+import json
+import psycopg2
+from datetime import datetime
+import pandas as pd
+import os
+from dotenv import load_dotenv
+
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
+
+# Obtener las credenciales de la base de datos 
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+# Construir la cadena de conexión
+conn_string = f"host={DB_HOST} port={DB_PORT} dbname={DB_NAME} user={DB_USER} password={DB_PASSWORD}"
+
+try:
+    # Establecer la conexión
+    conn = psycopg2.connect(conn_string)
+    print("Conexión exitosa")
+
+    # Obtener el cursor
+    cursor = conn.cursor()
+
+    # Url de la API
+    base_url = "https://api.coinpaprika.com/v1/"
+
+    # Función para obtener los datos del top 10 de criptos
+    def get_top_10_crypto_data():
+        url = f"{base_url}tickers"
+        params = {
+            "quotes": "USD",
+            "limit": 10
+        }
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            print(f"Error al obtener los datos del top 10 de criptos. Código de estado: {response.status_code}")
+            print(f"Contenido de la respuesta: {response.text}")
+            return None
+
+    # Obtener los datos del top 10 de criptos
+    top_10_crypto_data = get_top_10_crypto_data()
+
+    # Mostrar los datos en un DataFrame de Pandas
+    crypto_df = pd.DataFrame(top_10_crypto_data)
+
+    # Cargar los datos en la tabla crypto_data
+    for index, row in crypto_df.iterrows():
+        coin_name = row['name']
+        symbol = row['symbol']
+        price = row['quotes']['USD']['price']
+        price_change = row['quotes']['USD']['percent_change_24h']
+        # Calcular el price_movement
+        if price_change > 0:
+            price_movement = 'up'
+        elif price_change < 0:
+            price_movement = 'down'
+        else:
+            price_movement = 'stable'
+        data_extraction_time = datetime.now()
+
+        # Verificar si las cryptos ya estan en la tabla
+        select_query = """
+            SELECT 1 FROM crypto_data WHERE symbol = %s
+        """
+        cursor.execute(select_query, (symbol,))
+        existing_data = cursor.fetchone()
+
+        if existing_data:
+            # Si las cryptos estan, actualizar los valores
+            update_query = """
+                UPDATE crypto_data 
+                SET price = %s, price_change = %s, price_movement = %s, data_extraction_time = %s 
+                WHERE symbol = %s
+            """
+            cursor.execute(update_query, (price, price_change, price_movement, data_extraction_time, symbol))
+        else:
+            # Si las cryptos no estan, que ingrese todo
+            insert_query = """
+                INSERT INTO crypto_data (coin_name, symbol, price, price_change, price_movement, data_extraction_time) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, (coin_name, symbol, price, price_change, price_movement, data_extraction_time))
+
+    # Confirmar los cambios
+    conn.commit()
+    print("Datos cargados exitosamente en la tabla crypto_data")
+
+    # Cerrar el cursor y la conexión
+    cursor.close()
+    conn.close()
+    print("Conexión cerrada")
+except Exception as e:
+    print(f"Error al conectar a la base de datos: {e}")
