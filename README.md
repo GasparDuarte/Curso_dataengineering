@@ -8,7 +8,6 @@ Descarga el código fuente del proyecto desde el repositorio
 
 Instalar las Dependencias
 Asegúrate de tener Python instalado en tu sistema. Luego, instala las dependencias necesarias ejecutando el siguiente comando en la terminal:
-
 pip install psycopg2 requests pandas
 
 Configurar las Variables de Entorno
