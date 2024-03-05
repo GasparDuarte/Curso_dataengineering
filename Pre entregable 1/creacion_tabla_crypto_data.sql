@@ -1,7 +1,7 @@
 -- Este script fue generado por DBeaver y se utilizó para crear la tabla en Amazon Redshift.
 -- La tabla fue creada manualmente a través de la interfaz de DBeaver.
 
-CREATE TABLE IF NOT EXISTS gasparduarte_2001_coderhouse.crypto_data
+CREATE TABLE IF NOT EXISTS crypto_data
 (
 	id INTEGER NOT NULL DEFAULT "identity"(945907, 0, '1,1'::text) ENCODE az64
 	,coin_name VARCHAR(100) NOT NULL DEFAULT 0 ENCODE lzo
@@ -16,4 +16,3 @@ CREATE TABLE IF NOT EXISTS gasparduarte_2001_coderhouse.crypto_data
 )
 DISTSTYLE AUTO
 ;
-ALTER TABLE gasparduarte_2001_coderhouse.crypto_data owner to gasparduarte_2001_coderhouse;
