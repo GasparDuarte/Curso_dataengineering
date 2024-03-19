@@ -1,7 +1,9 @@
 Desafío del Proyecto
+
 El desafío de este proyecto es cargar datos sobre criptomonedas desde una API externa a una base de datos en Amazon Redshift utilizando Python. El objetivo es mantener actualizados los datos de criptomonedas en la base de datos para su posterior análisis.
 
 Pasos para Reproducir el Código
+
 1)Descargar el Código: Descarga el código fuente del proyecto desde el repositorio.
 
 2)Instalar las Dependencias: Asegúrate de tener Python instalado en tu sistema. Luego, instala las dependencias necesarias ejecutando el archivo Requirements.txt
